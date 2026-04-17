@@ -103,6 +103,7 @@
     <IntDir>$(ProjectDir)obj\x64\Debug\raylib-quickstart\</IntDir>
     <TargetName>raylib-quickstart</TargetName>
     <TargetExt>.exe</TargetExt>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -303,8 +304,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\resource_dir.h" />
+    <ClInclude Include="PCGKai.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="PCGKai.c" />
     <ClCompile Include="src\main.c" />
   </ItemGroup>
   <ItemGroup>
