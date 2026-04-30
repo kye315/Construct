@@ -5,7 +5,7 @@ namespace PCG {
     // Screen & Map Dimensions
     constexpr int SCREEN_WIDTH = 1024;
     constexpr int SCREEN_HEIGHT = 1024;
-    constexpr int TILE_SIZE = 32;
+    constexpr int TILE_SIZE = 16;
     constexpr int MAP_COLUMNS = (SCREEN_WIDTH / TILE_SIZE);
     constexpr int MAP_ROWS = (SCREEN_HEIGHT / TILE_SIZE);
 
@@ -40,11 +40,11 @@ namespace PCG {
 
     // Function Declarations
     void CreateMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], WalkBehaviour _walkBehaviour);
+    bool PathIsBordered(int _walkMode, TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], int y, int x);
+
     void DrawMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
     void PrintMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
     Color GetTileColor(TileType tileType);
-
-    bool PathIsBordered(int _walkMode, TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], int y, int x);
 
     // File Names
     constexpr char* MAP_TEXT_FILENAME = "pcg_map_data.txt";
