@@ -1,159 +1,5 @@
 #include "PCG.h"
 #include <stdio.h>
-#include <iostream>
-#include <algorithm>
-#include <fstream>
-
-// ============================================= 
-// WALL GENERATOR
-// ============================================= 
-void PCG::CreateMap(PCG::TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], WalkBehaviour _walkBehaviour) {
-
-	// START WALL FILL
-	for (int y = 0; y < PCG::MAP_ROWS; y++) {
-		for (int x = 0; x < PCG::MAP_COLUMNS; x++) {
-			_tileArray[y][x] = PCG::TileType::TILE_TYPE_WALL;
-		}
-	}
-
-	// START WALK
-	bool walking = true;
-
-	// current walker position
-	int x = 0;
-	int y = PCG::MAP_ROWS / 2;
-
-	// current mode
-	int walkMode = 1;
-
-	// debug
-	int steps = 0;
-	int turnSteps = 0;
-
-	_tileArray[y][x] = PCG::TileType::TILE_TYPE_ENTRANCE;
-	x++;
-
-	while (walking) // repeatedly walks until reaches end
-	{
-		steps++;
-		std::cout << "[STEP " << steps << "]";
-		_tileArray[y][x] = PCG::TileType::TILE_TYPE_PATH;
-
-		if (GetRandomValue(0, 100) > _walkBehaviour.R_TURN)
-		{
-			turnSteps++;
-			if (GetRandomValue(0, 100) > 50)
-			{
-				walkMode++;
-				std::cout << "Turned right!";
-			}
-			else
-			{
-				walkMode--;
-				std::cout << "Turned left!";
-			}
-			walkMode = std::clamp(walkMode, 0, 2);
-		}
-		switch (walkMode) {
-
-		case 0: // moving up
-			y--;
-			if (y < 0 || _tileArray[y][x] == PCG::TileType::TILE_TYPE_PATH || PCG::PathIsBordered(walkMode, _tileArray, y, x) == false)
-			{
-				y++;
-				walkMode = 1;
-				std::cout << "Turned right! (FAILSAFE)";
-			}
-			break;
-
-		case 1: // moving forward
-			x++;
-			break;
-
-		case 2: // moving down
-			y++;
-			if (y > (PCG::MAP_ROWS - 1) || _tileArray[y][x] == PCG::TileType::TILE_TYPE_PATH || PCG::PathIsBordered(walkMode, _tileArray, y, x) == false) {
-				y--;
-				walkMode = 1;
-				std::cout << "Turned left! (FAILSAFE)";
-			}
-			break;
-
-		default: // no movement failsafe
-			std::cout << "WARNING: No movement!";
-			break;
-		}
-
-		std::cout << "Walked to " << y << ", " << x << "!";
-
-		if (x == PCG::MAP_COLUMNS) {
-			walking = false; // reset to avoid inf loop
-			std::cout << "Completed in " << steps << " steps!";
-			std::cout << turnSteps << " out of " << steps << " turned around!";
-		}
-	}
-
-	//for (int y = 0; y < PCG::MAP_ROWS; y++) {
-	//    for (int x = 0; x < PCG::MAP_COLUMNS; x++) {
-	//        int selection;
-	//        int roll = GetRandomValue(0, 100);
-	//        if (roll > PCG::TileType::COLORTHRESH) { selection = 0; }
-	//        else { selection = 1; }
-
-
-	//        _tileArray[y][x] = (PCG::TileType)selection;
-	//    }
-	//}
-}
-
-// ============================================= 
-// Bool PathIsBordered
-// Checks for neighboring paths based on direction
-// ============================================= 
-bool PCG::PathIsBordered(int _walkMode, TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], int y, int x)
-{
-	switch (_walkMode)
-	{
-
-	case(0): // up
-		if (_tileArray[y][x - 1] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y][x - 2] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y][x + 1] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y][x + 2] != PCG::TileType::TILE_TYPE_PATH)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-		break;
-
-	case(1): // right
-		if (_tileArray[y - 1][x] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y - 2][x] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y + 1][x] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y + 2][x] != PCG::TileType::TILE_TYPE_PATH)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-		break;
-
-	case (2): // down
-		if (_tileArray[y][x - 2] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y][x + 2] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y][x - 1] != PCG::TileType::TILE_TYPE_PATH && _tileArray[y][x + 1] != PCG::TileType::TILE_TYPE_PATH)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-		break;
-	default:
-		return false;
-		break;
-	}
-}
-
-
 // ============================================= 
 // Color PCG_GetTileColor(TileType tileType)
 // Return a colour based on the type type input
@@ -162,6 +8,7 @@ Color PCG::GetTileColor(PCG::TileType tileType) {
 	switch (tileType) {
 	case PCG::TILE_TYPE_WALL: return PCG::WALL_COLOR;
 	case PCG::TILE_TYPE_PATH: return PCG::PATH_COLOR;
+	case PCG::TILE_TYPE_BRANCHSTART: return PCG::BRANCHSTART_COLOR;
 	case PCG::TILE_TYPE_BRANCHPATH: return PCG::BRANCHPATH_COLOR;
 	case PCG::TILE_TYPE_BRANCHEND: return PCG::BRANCHEND_COLOR;
 	case PCG::TILE_TYPE_ROOMCENTER: return PCG::ROOMCENTER_COLOR;
@@ -200,6 +47,11 @@ char PCG::GetTileChar(PCG::TileType tileType) {
 	switch (tileType) {
 	case PCG::TILE_TYPE_WALL: return PCG::WALL_CHAR;
 	case PCG::TILE_TYPE_PATH: return PCG::PATH_CHAR;
+	case PCG::TILE_TYPE_BRANCHSTART: return PCG::BRANCHSTART_CHAR;
+	case PCG::TILE_TYPE_BRANCHPATH: return PCG::BRANCHPATH_CHAR;
+	case PCG::TILE_TYPE_BRANCHEND: return PCG::BRANCHEND_CHAR;
+	case PCG::TILE_TYPE_ROOMCENTER: return PCG::ROOMCENTER_CHAR;
+	case PCG::TILE_TYPE_ENTRANCE: return PCG::ENTRANCE_CHAR;
 	default: return '?';
 	}
 }
@@ -289,7 +141,7 @@ void PCG::SaveMapImage(PCG::TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS]
 }
 
 // Required to call Raylib gui buttons. Add this near the top of PCG.c
-#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_IMPLEMENTATION 
 #include "raygui.h" 
 
 // ============================================= 

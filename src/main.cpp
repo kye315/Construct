@@ -7,7 +7,7 @@ int main() {
     InitWindow(PCG::SCREEN_WIDTH, PCG::SCREEN_HEIGHT, "Construct Map Editor");
 
     PCG::TileType tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS] = { PCG::TileType::TILE_TYPE_WALL };
-    PCG::WalkBehaviour initialWalkBehaviour = PCG::WalkBehaviour{ 50, 80 };
+    PCG::WalkBehaviour initialWalkBehaviour = PCG::WalkBehaviour{ };
     PCG::CreateMap(tileArray, initialWalkBehaviour);
 
     while (!WindowShouldClose()) {
