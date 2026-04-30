@@ -1,58 +1,72 @@
-#ifndef PCG_H
-#define PCG_H
+#pragma once
 #include "raylib.h"
 
-// Screen & Map Dimensions
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 1024
-#define TILE_SIZE 64
-#define MAP_COLUMNS (SCREEN_WIDTH / TILE_SIZE)
-#define MAP_ROWS (SCREEN_HEIGHT / TILE_SIZE)
+namespace PCG {
+    // Screen & Map Dimensions
+    constexpr int SCREEN_WIDTH = 1024;
+    constexpr int SCREEN_HEIGHT = 1024;
+    constexpr int TILE_SIZE = 32;
+    constexpr int MAP_COLUMNS = (SCREEN_WIDTH / TILE_SIZE);
+    constexpr int MAP_ROWS = (SCREEN_HEIGHT / TILE_SIZE);
 
-// Tile Types (Using Enum for readability)
-typedef enum {
-    TILE_TYPE_GRASS = 0,
-    TILE_TYPE_ROCK = 1,
-    TILE_COUNT  // Automatically counts total types
-} TileType;
+    // Tile Types (Using Enum for readability)
+    typedef enum {
+        TILE_TYPE_WALL = 0,
+        TILE_TYPE_PATH = 1,
+        TILE_TYPE_BRANCHPATH = 2,
+        TILE_TYPE_BRANCHEND = 3,
+        TILE_TYPE_ROOMCENTER = 4,
+        TILE_TYPE_ENTRANCE = 5,
+        TILE_COUNT  // Automatically counts total types
+    } TileType;
+     
+    // Lower = more probable
+    typedef struct {
+        int R_TURN = 50;
+        int R_MAKEBRANCH = 80;
+    } WalkBehaviour;
 
-// threshold
-int colorTreshhold;
+    // Visual & Character settings
+    constexpr char WALL_CHAR = '#';
+    constexpr char PATH_CHAR = '+';
+    constexpr char ITEM_CHAR = '!';
+    constexpr Color WALL_COLOR = { 40, 40, 40, 255 };
+    constexpr Color PATH_COLOR = { 150, 150, 150, 255 };
+    constexpr Color BRANCHPATH_COLOR = { 150, 180, 150, 255 };
+    constexpr Color BRANCHEND_COLOR = { 150, 255, 150, 255 };
+    constexpr Color ROOMCENTER_COLOR = { 255, 255, 0, 255 };
+    constexpr Color ENTRANCE_COLOR = { 255, 0, 0, 255 };
+    constexpr Color UNKNOWN_COLOR = WHITE;
 
-// Visual & Character settings
-#define GRASS_CHAR '.'
-#define ROCK_CHAR '#'
-#define GRASS_COLOR (Color){69, 182, 156, 255}
-#define ROCK_COLOR (Color){114, 147, 160, 255}
-#define UNKNOWN_COLOR WHITE
+    // Function Declarations
+    void CreateMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], WalkBehaviour _walkBehaviour);
+    void DrawMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
+    void PrintMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
+    Color GetTileColor(TileType tileType);
 
-// Function Declarations
-void PCG_CreateMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
-void PCG_DrawMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
-void PCG_PrintMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
-Color PCG_GetTileColor(TileType tileType);
+    bool PathIsBordered(int _walkMode, TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], int y, int x);
 
-// File Names
-#define MAP_TEXT_FILENAME "pcg_map_data.txt"
+    // File Names
+    constexpr char* MAP_TEXT_FILENAME = "pcg_map_data.txt";
 
-// Helpers
-char GetTileChar(TileType tileType);
+    // Helpers
+    char GetTileChar(TileType tileType);
 
-// I/O Functions
-void PCG_SaveMapData(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], const char* filename);
-void PCG_LoadMapData(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], const char* filename);
+    // I/O Functions
+    void SaveMapData(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], const char* filename);
+    void LoadMapData(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], const char* filename);
 
-#define MAP_IMAGE_FILENAME "pcg_map.png"
-void PCG_SaveMapImage(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], const char* filename);
+    constexpr char* MAP_IMAGE_FILENAME = "pcg_map.png";
+    void SaveMapImage(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], const char* filename);
 
-// UI variable defines used to position buttons on screen
-#define BUTTON_WIDTH 200
-#define BUTTON_HEIGHT 50
-#define BUTTON_X (SCREEN_WIDTH - BUTTON_WIDTH - 20)
-#define BUTTON_Y (SCREEN_HEIGHT - BUTTON_HEIGHT - 20)
-#define RESET_BUTTON_BOUNDS (Rectangle){ BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT }
+    // UI variable defines used to position buttons on screen
+    constexpr int BUTTON_WIDTH = 200;
+    constexpr int BUTTON_HEIGHT = 50;
+    constexpr int BUTTON_X = (SCREEN_WIDTH - BUTTON_WIDTH - 20);
+    constexpr int BUTTON_Y = (SCREEN_HEIGHT - BUTTON_HEIGHT - 20);
+    constexpr Rectangle RESET_BUTTON_BOUNDS = { BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT };
 
-// Declare UI drawing function
-void PCG_DrawGUI(TileType tileArray[MAP_ROWS][MAP_COLUMNS]);
+    // Declare UI drawing function
+    void DrawGUI(TileType tileArray[MAP_ROWS][MAP_COLUMNS]);
 
-#endif // PCG_H
+}
