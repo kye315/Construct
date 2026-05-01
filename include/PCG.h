@@ -3,6 +3,8 @@
 #include <fstream>
 #include <algorithm>
 #include <iostream>
+#include <vector>
+
 
 namespace PCG {
     // Screen & Map Dimensions
@@ -20,18 +22,26 @@ namespace PCG {
         TILE_TYPE_BRANCHPATH = 3,
         TILE_TYPE_BRANCHEND = 4,
         TILE_TYPE_ROOMCENTER = 5,
-        TILE_TYPE_ENTRANCE = 6,
+        TILE_TYPE_ROOMPATH = 6,
+        TILE_TYPE_ENTRANCE = 7,
         TILE_COUNT  // Automatically counts total types
     } TileType;
      
     typedef struct {
         // Lower = more probable
         int R_TURN = 50;
-        int R_MAKEBRANCH = 80;
-        int R_MAKEROOM = 90;
-        int BRANCH_LENGTH = 10;
+        int R_MAKEBRANCH = 95;
+        int R_MAKEROOM = 98;
+        int BRANCH_LENGTH = 40;
         int BRANCH_SCRAMBLE = 2;
+        int ROOM_SIZE = 10;
     } WalkBehaviour;
+
+    typedef struct {
+        int startx;
+        int starty;
+        int startWM;
+    } BranchProperties;
 
     // Visual & Character settings
     constexpr char WALL_CHAR = '#';
@@ -40,6 +50,7 @@ namespace PCG {
     constexpr char BRANCHPATH_CHAR = '%';
     constexpr char BRANCHEND_CHAR = ' ! ';
     constexpr char ROOMCENTER_CHAR = 'O';
+    constexpr char ROOMPATH_CHAR = 'o';
     constexpr char ENTRANCE_CHAR = ' = ';
     //constexpr char ITEM_CHAR = '!';
     constexpr Color WALL_COLOR = { 40, 40, 40, 255 };
@@ -48,16 +59,23 @@ namespace PCG {
     constexpr Color BRANCHPATH_COLOR = { 150, 180, 150, 255 };
     constexpr Color BRANCHEND_COLOR = { 150, 255, 150, 255 };
     constexpr Color ROOMCENTER_COLOR = { 255, 255, 0, 255 };
+    constexpr Color ROOMPATH_COLOR = { 100, 100, 0, 255 };
     constexpr Color ENTRANCE_COLOR = { 255, 0, 0, 255 };
     constexpr Color UNKNOWN_COLOR = WHITE;
 
     // Function Declarations
     void CreateMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], WalkBehaviour _walkBehaviour);
     void Sprout(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], WalkBehaviour _walkBehaviour, int _starty, int _startx, int startWalkMode);
-    bool PathIsBordered(int _walkMode, TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], int y, int x);
+    void MakeRoom(TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], WalkBehaviour _walkBehaviour, int _y, int _x);
+    bool PathIsBordered(int _walkMode, TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], int y, int x, WalkBehaviour _walkBehaviour);
+
+    int CoinFlip(int heads, int tails);
 
     void DrawMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
     void PrintMap(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
+
+    bool GetInput(TileType _tileArray[MAP_ROWS][MAP_COLUMNS]);
+
     Color GetTileColor(TileType tileType);
 
     // File Names
@@ -81,10 +99,21 @@ namespace PCG {
     constexpr Rectangle RESET_BUTTON_BOUNDS = { BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT };
 
     // Declare UI drawing function
-    void DrawGUI(TileType tileArray[MAP_ROWS][MAP_COLUMNS]);
-
+    void DrawGUI(TileType tileArray[MAP_ROWS][MAP_COLUMNS], WalkBehaviour _walkBehaviour);
+    WalkBehaviour WBGui(WalkBehaviour _walkBehaviour);
 }
+//typedef struct {
+//    // Lower = more probable
+//    int R_TURN = 50;
+//    int R_MAKEBRANCH = 95;
+//    int R_MAKEROOM = 98;
+//    int BRANCH_LENGTH = 40;
+//    int BRANCH_SCRAMBLE = 2;
+//    int ROOM_SIZE = 10;
+//} WalkBehaviour;
 
-class createMap
-{
-};
+//class createMap
+//{
+//};
+
+

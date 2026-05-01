@@ -1,5 +1,10 @@
 #include "PCG.h"
 #include <stdio.h>
+// Required to call Raylib gui buttons. Add this near the top of PCG.c
+#define RAYGUI_IMPLEMENTATION 
+#include "raygui.h" 
+
+
 // ============================================= 
 // Color PCG_GetTileColor(TileType tileType)
 // Return a colour based on the type type input
@@ -12,6 +17,7 @@ Color PCG::GetTileColor(PCG::TileType tileType) {
 	case PCG::TILE_TYPE_BRANCHPATH: return PCG::BRANCHPATH_COLOR;
 	case PCG::TILE_TYPE_BRANCHEND: return PCG::BRANCHEND_COLOR;
 	case PCG::TILE_TYPE_ROOMCENTER: return PCG::ROOMCENTER_COLOR;
+	case PCG::TILE_TYPE_ROOMPATH: return PCG::ROOMPATH_COLOR;
 	case PCG::TILE_TYPE_ENTRANCE: return PCG::ENTRANCE_COLOR;
 
 	default: return PCG::UNKNOWN_COLOR;
@@ -51,6 +57,7 @@ char PCG::GetTileChar(PCG::TileType tileType) {
 	case PCG::TILE_TYPE_BRANCHPATH: return PCG::BRANCHPATH_CHAR;
 	case PCG::TILE_TYPE_BRANCHEND: return PCG::BRANCHEND_CHAR;
 	case PCG::TILE_TYPE_ROOMCENTER: return PCG::ROOMCENTER_CHAR;
+	case PCG::TILE_TYPE_ROOMPATH: return PCG::ROOMPATH_CHAR;
 	case PCG::TILE_TYPE_ENTRANCE: return PCG::ENTRANCE_CHAR;
 	default: return '?';
 	}
@@ -140,17 +147,13 @@ void PCG::SaveMapImage(PCG::TileType _tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS]
 	UnloadImage(mapImage);
 }
 
-// Required to call Raylib gui buttons. Add this near the top of PCG.c
-#define RAYGUI_IMPLEMENTATION 
-#include "raygui.h" 
-
 // ============================================= 
 // void PCG_DrawGUI(TileType tileArray[MAP_ROWS][MAP_COLUMNS])
 // ============================================= 
-void PCG::DrawGUI(PCG::TileType tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS]) {
+void PCG::DrawGUI(PCG::TileType tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS], WalkBehaviour _walkBehaviour) {
 	// Reset Button
 	if (GuiButton(PCG::RESET_BUTTON_BOUNDS, "Reset Map")) {
-		PCG::CreateMap(tileArray, PCG::WalkBehaviour{ 50, 80 });
+		PCG::CreateMap(tileArray, _walkBehaviour);
 	}
 
 	// Save Data Button
@@ -158,6 +161,9 @@ void PCG::DrawGUI(PCG::TileType tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS]) {
 	if (GuiButton(saveRect, "Save Map Data")) {
 		PCG::SaveMapData(tileArray, PCG::MAP_TEXT_FILENAME);
 	}
+
+	Rectangle expositionRect = { 50, 90, PCG::BUTTON_WIDTH, 500 };
+	GuiLabel(expositionRect, "Paint instructions; \nQ = wall brush; \nW = path brush; \nE = branch entrance brush; \nA = branch pathway brush; \nS = branch end brush; \nD = room center brush; \nZ = room path brush; \nC = place entrance");
 
 	// Load Data Button
 	Rectangle loadRect = { PCG::BUTTON_X, PCG::BUTTON_Y - 140, PCG::BUTTON_WIDTH, PCG::BUTTON_HEIGHT };
@@ -171,15 +177,146 @@ void PCG::DrawGUI(PCG::TileType tileArray[PCG::MAP_ROWS][PCG::MAP_COLUMNS]) {
 		PCG::SaveMapImage(tileArray, PCG::MAP_IMAGE_FILENAME);
 	}
 
-	//// increase roll
+	//// increase branch rate
 	//Rectangle incRect = { PCG::BUTTON_X, PCG::BUTTON_Y - 280, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
-	//if (GuiButton(incRect, "Increase Roll")) {
-	//    PCG::COLORTHRESH += 5;
+	//if (GuiButton(incRect, "Increase Branch Rate")) {
+	//	initialWalkBehaviour.R_MAKEBRANCH = std::clamp(initialWalkBehaviour.R_MAKEBRANCH + 5, 0, 100);
 	//}
-	//
+
 	//// decrease roll
 	//Rectangle decRect = { PCG::BUTTON_X + (PCG::BUTTON_WIDTH / 2), PCG::BUTTON_Y - 280, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT};
-	//if (GuiButton(decRect, "Decrease Roll")) {
-	//    PCG::COLORTHRESH -= 5;
+	//if (GuiButton(decRect, "Decrease Branch Rate")) {
+	//	initialWalkBehaviour.R_MAKEBRANCH = std::clamp(initialWalkBehaviour.R_MAKEBRANCH - 5, 0, 100);
 	//}
+}
+
+PCG::WalkBehaviour PCG::WBGui(WalkBehaviour _walkBehaviour)
+{
+
+	// increase turn rate
+	Rectangle incTurnRect = { PCG::BUTTON_X, PCG::BUTTON_Y - 280, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
+	if (GuiButton(incTurnRect, "more turns")) {
+		_walkBehaviour.R_TURN = std::clamp(_walkBehaviour.R_TURN - 5, 0, 100);
+	}
+
+	// decrease turn rate
+	Rectangle decTurnRect = { PCG::BUTTON_X + (PCG::BUTTON_WIDTH / 2), PCG::BUTTON_Y - 280, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT};
+	if (GuiButton(decTurnRect, "less turns")) {
+		_walkBehaviour.R_TURN = std::clamp(_walkBehaviour.R_TURN + 5, 0, 100);
+	}
+
+	// increase branch rate
+	Rectangle incBranchRect = { PCG::BUTTON_X, PCG::BUTTON_Y - 350, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
+	if (GuiButton(incBranchRect, "more branches")) {
+		_walkBehaviour.R_MAKEBRANCH = std::clamp(_walkBehaviour.R_MAKEBRANCH - 5, 0, 100);
+	}
+
+	// decrease branch rate
+	Rectangle decBranchRect = { PCG::BUTTON_X + (PCG::BUTTON_WIDTH / 2), PCG::BUTTON_Y - 350, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
+	if (GuiButton(decBranchRect, "less branches")) {
+		_walkBehaviour.R_MAKEBRANCH = std::clamp(_walkBehaviour.R_MAKEBRANCH + 5, 0, 100);
+	}
+
+	// increase room rate
+	Rectangle incRoomRect = { PCG::BUTTON_X, PCG::BUTTON_Y - 420, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT }; //blaze it
+	if (GuiButton(incRoomRect, "more rooms")) {
+		_walkBehaviour.R_MAKEROOM = std::clamp(_walkBehaviour.R_MAKEROOM - 5, 0, 100);
+	}
+
+	// decrease room rate
+	Rectangle decRoomRect = { PCG::BUTTON_X + (PCG::BUTTON_WIDTH / 2), PCG::BUTTON_Y - 420, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
+	if (GuiButton(decRoomRect, "less rooms")) {
+		_walkBehaviour.R_MAKEROOM = std::clamp(_walkBehaviour.R_MAKEROOM + 5, 0, 100);
+	}
+
+	// increase branch length
+	Rectangle longBranchRect = { PCG::BUTTON_X, PCG::BUTTON_Y - 490, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT }; 
+	if (GuiButton(longBranchRect, "longer branches")) {
+		_walkBehaviour.BRANCH_LENGTH = std::clamp(_walkBehaviour.BRANCH_LENGTH + 1, 0, 100);
+	}
+
+	// decrease branch length
+	Rectangle shortBranchRect = { PCG::BUTTON_X + (PCG::BUTTON_WIDTH / 2), PCG::BUTTON_Y - 490, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
+	if (GuiButton(shortBranchRect, "shorter branches")) {
+		_walkBehaviour.BRANCH_LENGTH = std::clamp(_walkBehaviour.BRANCH_LENGTH - 1, 0, 100);
+	}
+
+	// increase room size
+	Rectangle longRoomRect = { PCG::BUTTON_X, PCG::BUTTON_Y - 490, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
+	if (GuiButton(longRoomRect, "bigger rooms")) {
+		_walkBehaviour.ROOM_SIZE = std::clamp(_walkBehaviour.ROOM_SIZE + 1, 1, 50);
+	}
+
+	// decrease branch length
+	Rectangle shortRoomRect = { PCG::BUTTON_X + (PCG::BUTTON_WIDTH / 2), PCG::BUTTON_Y - 490, PCG::BUTTON_WIDTH / 2, PCG::BUTTON_HEIGHT };
+	if (GuiButton(shortRoomRect, "smaller rooms")) {
+		_walkBehaviour.ROOM_SIZE = std::clamp(_walkBehaviour.ROOM_SIZE - 1, 1, 50);
+	}
+
+
+	return _walkBehaviour;
+}
+
+// ============================================= 
+// void PCG_GetInput
+// ============================================= 
+bool PCG::GetInput(TileType _tileArray[MAP_ROWS][MAP_COLUMNS])
+{
+	Vector2 GMP = GetMousePosition();
+	int x = std::round(GMP.x / TILE_SIZE);
+	int y = std::round(GMP.y / TILE_SIZE);
+
+	TileType Paint;
+
+	bool Pressed = false;
+
+	if (IsKeyDown(KEY_Q))
+	{
+		Paint = PCG::TILE_TYPE_WALL;
+		Pressed = true;
+	}
+	if (IsKeyDown(KEY_W))
+	{
+		Paint = PCG::TILE_TYPE_PATH;
+		Pressed = true;
+	}
+	if (IsKeyDown(KEY_E))
+	{
+		Paint = PCG::TILE_TYPE_BRANCHSTART;
+		Pressed = true;
+	}
+	if (IsKeyDown(KEY_A))
+	{
+		Paint = PCG::TILE_TYPE_BRANCHPATH;
+		Pressed = true;
+	}
+	if (IsKeyDown(KEY_S))
+	{
+		Paint = PCG::TILE_TYPE_BRANCHEND;
+		Pressed = true;
+	}
+	if (IsKeyDown(KEY_D))
+	{
+		Paint = PCG::TILE_TYPE_ROOMCENTER;
+		Pressed = true;
+	}
+	if (IsKeyDown(KEY_Z))
+	{
+		Paint = PCG::TILE_TYPE_ROOMPATH;
+		Pressed = true;
+	}
+	if (IsKeyDown(KEY_C))
+	{
+		Paint = PCG::TILE_TYPE_ENTRANCE;
+		Pressed = true;
+	}
+
+	if (Pressed)
+	{
+		_tileArray[y][x] = Paint;
+
+		std::cout << GMP.x << "..." << GMP.y << "...";
+		return false; // DO NOT draw GUI
+	}
+	return true; // DRAW gui
 }
