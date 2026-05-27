@@ -48,10 +48,11 @@ namespace PCG {
     constexpr char PATH_CHAR = '+';
     constexpr char BRANCHSTART_CHAR = '@';
     constexpr char BRANCHPATH_CHAR = '%';
-    constexpr char BRANCHEND_CHAR = ' ! ';
+    constexpr char BRANCHEND_CHAR = '!';
     constexpr char ROOMCENTER_CHAR = 'O';
     constexpr char ROOMPATH_CHAR = 'o';
-    constexpr char ENTRANCE_CHAR = ' = ';
+    constexpr char ENTRANCE_CHAR = '=';
+    constexpr char SPACE_CHAR = ' ';
     //constexpr char ITEM_CHAR = '!';
     constexpr Color WALL_COLOR = { 40, 40, 40, 255 };
     constexpr Color PATH_COLOR = { 150, 150, 150, 255 };

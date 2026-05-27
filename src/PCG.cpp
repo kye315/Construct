@@ -82,7 +82,9 @@ void PCG::SaveMapData(TileType _tileArray[MAP_ROWS][MAP_COLUMNS], const char* _f
 			file.put(PCG::GetTileChar(_tileArray[y][x])); // Write char to C++ file stream
 		}
 		//fputc('\n', file); // New line at end of row
+		file.put(SPACE_CHAR); // New line at end of row for C++ file stream
 		file.put('\n'); // New line at end of row for C++ file stream
+		// add space for UE
 	}
 	//fclose(file); // old C-style file close
 	file.close(); // Close C++ file stream
